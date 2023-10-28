@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- Google Font Link-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome Link -->
+    <script src="https://kit.fontawesome.com/659a986349.js" crossorigin="anonymous"></script>
+    <!-- Box Icon LInk -->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+    <!-- Css Link -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav>
+        <div class="container flex navbar">
+            <div class="logo">Ganaik</div>
+            <div class="logo2">
+                <h1>GD</h1>
+            </div>
+            <ul class="nav-links flex">
+                <li class="links" id="ipl" onclick="onnavitemclick('ipl')">IPL</li>
+                <li class="links" id="finance" onclick="onnavitemclick('finance')">FINANCE</li>
+                <li class="links" id="political" onclick="onnavitemclick('political')">POLITICAL</li>
+            </ul>
+            <div class="search flex">
+                <input type="text" placeholder="Search..." class="input news-input" >
+                <button class="bx-search1"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+            <i class="fa-solid fa-bars"></i>
+        </div>
+    </nav>
+    <main>
+        <div class="container ">
+           <div class="cardholder card-container flex">
+            <h1>SEARCH TO GET THE NEWS</h1>
+           </div>
+              <div class="pre-next flex">
+                <button class="btn pre"><i class="fa-solid fa-chevron-left"></i>Prev</button>
+                <button class="btn next">Next<i class="fa-solid fa-chevron-right"></i></button>
+              </div> 
+             
+        </div>
+    </main>
+    <template id="template-news-card">
+        <div class="card">
+            <div class="card-header">
+                <img src="https://via.placeholder.com/400x200" alt="" id="image">
+            </div>
+            <div class="card-content">
+                <h3 id="new-title">THIS IS THE TITLE</h3>
+                <h6 id="news-source">End gahjhfd hjkh</h6>
+                <p id="new-description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor, modi eos eum quisquam rerum voluptate quae distinctio ducimus porro placeat. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nemo, ipsum!</p>
+            </div>
+           </div>
+    </template>
+    <script>
+      let query;
+   let page = 1;
+   const apiKey = "f3f3186676d04087998dc54faecfe276";
+const apiurl = "https://newsapi.org/v2/everything?q="
+// window.addEventListener("load", () => fetchnews("India",100,1));
+async function fetchnews(query,pagesize,page) {
+    const res = await fetch(apiurl + query + `&apiKey=${apiKey}&pageSize=${pagesize}&page=${page}`);
+    let data = await res.json();
+    console.log(data)
+    if(data.totalResults==0){
+        prebtn.style.visibility = "hidden";
+        nextbtn.style.visibility="hidden";
+        cardsContainer.innerHTML = "<h1>No Result Found</h1>";
+    }else{
+        if(page==1){
+        prebtn.style.visibility = "hidden";
+    }
+    cardsContainer.innerHTML = "";
+        nextbtn.style.visibility="visible";
+        binddata(data.articles);
+      
+    }
+  
+} 
+const cardsContainer = document.querySelector(".card-container");
+function binddata(articles){
+    
+    const template= document.getElementById("template-news-card");
+   
+    
+    articles.forEach(element => {
+        if (!element.urlToImage) return;
+        let cardClone = template.content.cloneNode(true);
+        filldata(cardClone, element);
+        cardsContainer.appendChild(cardClone)
+    });
+
+}
+function filldata(cardClone1, articles) {
+    const newsimg = cardClone1.querySelector("#image");
+    let newstitle = cardClone1.querySelector("#new-title");
+    let newsource = cardClone1.querySelector("#news-source");
+    let newsdiscription = cardClone1.querySelector("#new-description");
+    newsimg.src = articles.urlToImage;
+    newstitle.innerHTML = articles.title;
+    newsdiscription.innerHTML = articles.description;
+    const date = new Date(articles.publishedAt).toLocaleString("en-US", {
+        timeZone: "Asia/Jakarta"
+    });
+    newsource.innerHTML = `${articles.source.name} • ${date}`;
+    cardClone1.firstElementChild.addEventListener("click",()=>{
+        window.open(articles.url,"_blank");
+    })
+}
+let curselecte = null;
+function onnavitemclick(id){
+    query = id;
+    fetchnews(id,20,page);
+    
+    const navitem = document.getElementById(id);
+    curselecte?.classList.remove('active');
+    curselecte=navitem;
+    curselecte.classList.add('active');
+    // if(navLink.classList.contains("active11")){
+    //     navLink.classList.remove("active11");
+    //     menubtn.classList.replace("bx-x","bx-menu")
+    // }
+}
+let prebtn = document.querySelector(".pre");
+let nextbtn = document.querySelector(".next");
+prebtn.addEventListener("click",()=>{
+    if(page>1){
+       page--;
+       fetchnews(query,20,page);
+    }
+    if(page==1){
+        prebtn.style.visibility = "hidden";
+    }
+})
+nextbtn.addEventListener("click",()=>{
+    prebtn.style.visibility = "visible";
+page++;
+fetchnews(query,20,page)
+})
+const searchInput= document.querySelector(".news-input");
+const searchicon = document.querySelector(".bx-search1");
+searchicon.addEventListener('click',()=>{
+    const keyword = searchInput.value;
+    console.log(keyword)
+    if(!keyword)return;
+    query = keyword;
+    page = 1;
+    fetchnews(query,20,page);
+    if(page==1){
+        prebtn.style.visibility = "hidden";
+    }
+    curselecte?.classList.remove('active');
+    curselecte = null;
+    searchInput.value="";
+    if(navLink.classList.contains("active11")){
+        navLink.classList.remove("active11");
+        menubtn.classList.replace("bx-x","bx-menu")
+    }
+   
+})
+    </script>
+</body>
+
+</html>
